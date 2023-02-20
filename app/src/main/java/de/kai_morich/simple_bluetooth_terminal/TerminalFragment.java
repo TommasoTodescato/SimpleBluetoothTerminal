@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.text.Editable;
@@ -225,6 +226,7 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     }
 
     private void receive(ArrayDeque<byte[]> datas) {
+        MediaPlayer mediaPlayer = MediaPlayer.create(getActivity().getApplicationContext(), R.raw.beep);
         SpannableStringBuilder spn = new SpannableStringBuilder();
         for (byte[] data : datas) {
             if (hexEnabled) {
@@ -247,6 +249,16 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                     pendingNewline = msg.charAt(msg.length() - 1) == '\r';
                 }
                 spn.append(TextUtil.toCaretString(msg, newline.length() != 0));
+                if(msg.length() > 1){
+                    String values = msg.replaceAll("[^0-9]", "");
+                    int gas = Integer.parseInt(values.substring(0, 3));
+                    int light = Integer.parseInt(values.substring(3, 6));
+                    System.out.println(gas);
+                    System.out.println(light);
+                    if(light > 700){
+                        mediaPlayer.start();
+                    }
+                }
             }
         }
         receiveText.append(spn);
