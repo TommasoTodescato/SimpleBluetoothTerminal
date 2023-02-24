@@ -248,17 +248,23 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                     }
                     pendingNewline = msg.charAt(msg.length() - 1) == '\r';
                 }
-                spn.append(TextUtil.toCaretString(msg, newline.length() != 0));
-                if(msg.length() > 1){
-                    String values = msg.replaceAll("[^0-9]", "");
-                    int gas = Integer.parseInt(values.substring(0, 3));
-                    int light = Integer.parseInt(values.substring(3, 6));
-                    System.out.println(gas);
-                    System.out.println(light);
-                    if(light > 700){
-                        mediaPlayer.start();
+                if(msg.length() > 1) {
+                    try{
+                        // Filter only numbers and newlines
+                        String values = msg.replaceAll("[^\\d\\n]", "");
+                        int gas = Integer.parseInt(values.split("\n")[0]);
+                        int light = Integer.parseInt(values.split("\n")[1]);
+                        // Get code for sound play
+                        String code = msg.split("\n")[2];
+                        if(code.contains("HIGH")) {
+                            mediaPlayer.start();
+                        }
+                    }catch(Exception e) {
+                        System.out.println("Invalid input: Not parsing");
+                        System.out.println(e);
                     }
                 }
+                spn.append(TextUtil.toCaretString(msg, newline.length() != 0));
             }
         }
         receiveText.append(spn);
