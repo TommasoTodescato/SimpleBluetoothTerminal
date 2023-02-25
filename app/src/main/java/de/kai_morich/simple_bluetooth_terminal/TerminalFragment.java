@@ -226,8 +226,11 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
     }
 
     private void receive(ArrayDeque<byte[]> datas) {
-        MediaPlayer mediaPlayer = MediaPlayer.create(getActivity().getApplicationContext(), R.raw.beep);
-        SpannableStringBuilder spn = new SpannableStringBuilder();
+        
+		//	Media player instance created (for sound support)
+		MediaPlayer mediaPlayer = MediaPlayer.create(getActivity().getApplicationContext(), R.raw.beep);
+        
+		SpannableStringBuilder spn = new SpannableStringBuilder();
         for (byte[] data : datas) {
             if (hexEnabled) {
                 spn.append(TextUtil.toHexString(data)).append('\n');
@@ -248,15 +251,25 @@ public class TerminalFragment extends Fragment implements ServiceConnection, Ser
                     }
                     pendingNewline = msg.charAt(msg.length() - 1) == '\r';
                 }
-                if(msg.length() > 1) {
+                
+				
+				//	NOTE: Bluetooth sometimes sends signals splitted in two
+				//	(example -> hello gets received as h... ello)
+				//	so it is necessary to check if the signal length is > 1
+
+				//	Input is considered valid only if there are 3 newlines (standard HIGH case)
+				if(msg.length() > 1 && msg.split("\n").length >= 3) {
                     try{
-                        // Filter only numbers and newlines
+                        // Only for debug purpose (removable)
                         String values = msg.replaceAll("[^\\d\\n]", "");
                         int gas = Integer.parseInt(values.split("\n")[0]);
                         int light = Integer.parseInt(values.split("\n")[1]);
-                        // Get code for sound play
-                        String code = msg.split("\n")[2];
-                        if(code.contains("HIGH")) {
+                        System.out.println(gas);
+						System.out.println(light);
+						
+						//	The sound only gets played if "HIGH" state is received
+						String code = msg.split("\n")[2];
+						if(code.contains("HIGH")) {
                             mediaPlayer.start();
                         }
                     }catch(Exception e) {
